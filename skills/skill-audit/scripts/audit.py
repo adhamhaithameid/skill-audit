@@ -15,10 +15,12 @@ import re
 import sys
 from pathlib import Path
 
-# Python 3.9 compatibility: sys.stdlib_module_names was added in 3.10.
-STDLIB = getattr(sys, "stdlib_module_names", frozenset())
+try:
+    STDLIB = frozenset(sys.stdlib_module_names)
+except AttributeError:
+    STDLIB = frozenset(('__future__', '_abc', '_aix_support', '_ast', '_asyncio', '_bisect', '_blake2', '_bootsubprocess', '_bz2', '_codecs', '_codecs_cn', '_codecs_hk', '_codecs_iso2022', '_codecs_jp', '_codecs_kr', '_codecs_tw', '_collections', '_collections_abc', '_compat_pickle', '_compression', '_contextvars', '_crypt', '_csv', '_ctypes', '_curses', '_curses_panel', '_datetime', '_dbm', '_decimal', '_elementtree', '_frozen_importlib', '_frozen_importlib_external', '_functools', '_gdbm', '_hashlib', '_heapq', '_imp', '_io', '_json', '_locale', '_lsprof', '_lzma', '_markupbase', '_md5', '_msi', '_multibytecodec', '_multiprocessing', '_opcode', '_operator', '_osx_support', '_overlapped', '_pickle', '_posixshmem', '_posixsubprocess', '_py_abc', '_pydecimal', '_pyio', '_queue', '_random', '_scproxy', '_sha1', '_sha256', '_sha3', '_sha512', '_signal', '_sitebuiltins', '_socket', '_sqlite3', '_sre', '_ssl', '_stat', '_statistics', '_string', '_strptime', '_struct', '_symtable', '_thread', '_threading_local', '_tkinter', '_tokenize', '_tracemalloc', '_typing', '_uuid', '_warnings', '_weakref', '_weakrefset', '_winapi', '_zoneinfo', 'abc', 'aifc', 'antigravity', 'argparse', 'array', 'ast', 'asynchat', 'asyncio', 'asyncore', 'atexit', 'audioop', 'base64', 'bdb', 'binascii', 'bisect', 'builtins', 'bz2', 'cProfile', 'calendar', 'cgi', 'cgitb', 'chunk', 'cmath', 'cmd', 'code', 'codecs', 'codeop', 'collections', 'colorsys', 'compileall', 'concurrent', 'configparser', 'contextlib', 'contextvars', 'copy', 'copyreg', 'crypt', 'csv', 'ctypes', 'curses', 'dataclasses', 'datetime', 'dbm', 'decimal', 'difflib', 'dis', 'distutils', 'doctest', 'email', 'encodings', 'ensurepip', 'enum', 'errno', 'faulthandler', 'fcntl', 'filecmp', 'fileinput', 'fnmatch', 'fractions', 'ftplib', 'functools', 'gc', 'genericpath', 'getopt', 'getpass', 'gettext', 'glob', 'graphlib', 'grp', 'gzip', 'hashlib', 'heapq', 'hmac', 'html', 'http', 'idlelib', 'imaplib', 'imghdr', 'imp', 'importlib', 'inspect', 'io', 'ipaddress', 'itertools', 'json', 'keyword', 'lib2to3', 'linecache', 'locale', 'logging', 'lzma', 'mailbox', 'mailcap', 'marshal', 'math', 'mimetypes', 'mmap', 'modulefinder', 'msilib', 'msvcrt', 'multiprocessing', 'netrc', 'nis', 'nntplib', 'nt', 'ntpath', 'nturl2path', 'numbers', 'opcode', 'operator', 'optparse', 'os', 'ossaudiodev', 'pathlib', 'pdb', 'pickle', 'pickletools', 'pipes', 'pkgutil', 'platform', 'plistlib', 'poplib', 'posix', 'posixpath', 'pprint', 'profile', 'pstats', 'pty', 'pwd', 'py_compile', 'pyclbr', 'pydoc', 'pydoc_data', 'pyexpat', 'queue', 'quopri', 'random', 're', 'readline', 'reprlib', 'resource', 'rlcompleter', 'runpy', 'sched', 'secrets', 'select', 'selectors', 'shelve', 'shlex', 'shutil', 'signal', 'site', 'smtpd', 'smtplib', 'sndhdr', 'socket', 'socketserver', 'spwd', 'sqlite3', 'sre_compile', 'sre_constants', 'sre_parse', 'ssl', 'stat', 'statistics', 'string', 'stringprep', 'struct', 'subprocess', 'sunau', 'symtable', 'sys', 'sysconfig', 'syslog', 'tabnanny', 'tarfile', 'telnetlib', 'tempfile', 'termios', 'textwrap', 'this', 'threading', 'time', 'timeit', 'tkinter', 'token', 'tokenize', 'tomllib', 'trace', 'traceback', 'tracemalloc', 'tty', 'turtle', 'turtledemo', 'types', 'typing', 'unicodedata', 'unittest', 'urllib', 'uu', 'uuid', 'venv', 'warnings', 'wave', 'weakref', 'webbrowser', 'winreg', 'winsound', 'wsgiref', 'xdrlib', 'xml', 'xmlrpc', 'zipapp', 'zipfile', 'zipimport', 'zlib', 'zoneinfo'))
 
-# id: (pillar, name, weight, kind)   kind: auto | heuristic | judge
+
 CHECKS = {
     1: ("Trigger", "Description states triggers, not steps", 3, "heuristic"),
     2: ("Trigger", "Name is valid and specific", 1, "auto"),
@@ -61,6 +63,7 @@ HARNESS_KEYS = {"disable-model-invocation", "user-invocable", "model", "context"
 ABS_PARTS = ["/Use" + "rs/", "/ho" + "me/", "/mn" + "t/"]
 TOOL_RE = (r"(bash_tool|str_replace\w*|present_files|create_file|web_search|web_fetch|TodoWrite|"
            r"WebSearch|WebFetch|NotebookEdit|AskUserQuestion|(?:Bash|Read|Edit|Write) tool|mcp__\w+)")
+
 
 
 def parse_frontmatter(text):
@@ -163,6 +166,8 @@ def run(root):
         raise ValueError("SKILL.md is empty")
     text = raw
     fm, body = parse_frontmatter(text)
+    if fm is None:
+        raise ValueError("SKILL.md has no frontmatter")
     fm = fm or {}
     name, desc = fm.get("name", ""), fm.get("description", "")
     body_lines = body.split("\n")
@@ -447,9 +452,15 @@ def run(root):
 def finish(data, override):
     res = data["res"]
     for k, v in override.items():
-        cid = int(k)
-        if cid in res and int(v) in (0, 1, 2):
-            res[cid]["score"], res[cid]["na"], res[cid]["overridden"] = int(v), False, True
+        try:
+            cid, score = int(k), int(v)
+        except (TypeError, ValueError):
+            raise ValueError(f"override keys and values must be integers: {k!r}={v!r}")
+        if cid not in res:
+            raise ValueError(f"unknown check id in override: {cid}")
+        if score not in (0, 1, 2):
+            raise ValueError(f"override score must be 0, 1, or 2: {cid}={score}")
+        res[cid]["score"], res[cid]["na"], res[cid]["overridden"] = score, False, True
     rows, pil = [], {p: [0, 0] for p in PILLARS}
     for cid, (pillar, title, w, kind) in CHECKS.items():
         r = res[cid]
@@ -494,6 +505,57 @@ def render(d):
     return "\n".join(out)
 
 
+def build_profile(root, data):
+    text = (root / "SKILL.md").read_text(encoding="utf-8-sig")
+    fm, body = parse_frontmatter(text)
+    fm = fm or {}
+    headings = [ln.strip() for ln in body.split("\n") if ln.strip().startswith("#")]
+    files = sorted(str(p.relative_to(root)) for p in root.rglob("*") if p.is_file())
+    scripts_info = []
+    sdir = root / "scripts"
+    if sdir.is_dir():
+        for p in sorted(sdir.iterdir()):
+            if p.suffix in {".py", ".sh", ".js"}:
+                doc = ""
+                try:
+                    src = p.read_text(encoding="utf-8", errors="replace")
+                    m = re.search(r'"""(.*?)"""', src, re.S)
+                    if m:
+                        doc = m.group(1).strip().split("\n")[0]
+                except OSError:
+                    pass
+                scripts_info.append({"file": str(p.relative_to(root)), "docstring": doc})
+    evals_count = 0
+    tc = 0
+    try:
+        ej = root / "evals" / "evals.json"
+        if ej.exists():
+            ed = json.loads(ej.read_text(encoding="utf-8"))
+            evals_count = len(ed.get("evals", []) if isinstance(ed, dict) else ed)
+    except (ValueError, OSError):
+        pass
+    # trigger cases
+    pos, neg = trigger_cases(root)
+    tc = pos + neg
+    tokens = len(text.split()) + sum(
+        len((root / f).read_text(encoding="utf-8", errors="replace").split())
+        for f in files if f != "SKILL.md" and (root / f).suffix in {".md", ".txt", ".py", ".sh", ".json"}
+    )
+    return {
+        "name": fm.get("name"),
+        "description": fm.get("description"),
+        "headings": headings,
+        "files": files,
+        "scripts": scripts_info,
+        "eval_count": evals_count,
+        "trigger_test_count": tc,
+        "token_estimate": tokens,
+        "skill_md_lines": data["stats"]["skill_md_lines"],
+        "grade": data["total"]["grade"],
+        "percent": data["total"]["percent"],
+    }
+
+
 def render_brief(d):
     t = d["total"]
     lines = [f"{d['skill']}: {t['percent']}/100 GRADE {t['grade']}"
@@ -509,6 +571,8 @@ def main():
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--brief", action="store_true")
     ap.add_argument("--override", default="{}")
+    ap.add_argument("--whatif", default=None, help="Project the score after fixes, JSON like {\"1\":2}")
+    ap.add_argument("--profile", action="store_true", help="Print a profile of the skill as JSON")
     a = ap.parse_args()
     p = Path(a.path)
     root = p.parent if p.is_file() else p
@@ -528,6 +592,25 @@ def main():
     except (FileNotFoundError, ValueError, OSError) as e:
         print(str(e), file=sys.stderr)
         sys.exit(2)
+    if a.profile:
+        prof = build_profile(root, data)
+        print(json.dumps(prof, indent=2))
+        return
+    if a.whatif:
+        try:
+            wif = json.loads(a.whatif)
+        except json.JSONDecodeError as e:
+            print(f"Bad --whatif value: {e}", file=sys.stderr)
+            sys.exit(2)
+        try:
+            proj = finish(run(root), {**override, **{str(k): int(v) for k, v in wif.items()}})
+        except (ValueError, TypeError) as e:
+            print(str(e), file=sys.stderr)
+            sys.exit(2)
+        base_pct = data["total"]["percent"]
+        print(f"Projected: {proj['total']['percent']}/100 GRADE {proj['total']['grade']} "
+              f"(from {base_pct}/100, +{proj['total']['percent'] - base_pct})")
+        return
     if a.json:
         print(json.dumps(data, indent=2))
     elif a.brief:

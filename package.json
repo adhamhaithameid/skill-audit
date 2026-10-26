@@ -1,6 +1,6 @@
 {
   "name": "skill-audit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A skill that audits other skills against 24 checks.",
   "license": "MIT",
   "author": "adhamhaithameid",

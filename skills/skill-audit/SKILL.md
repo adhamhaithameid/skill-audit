@@ -1,6 +1,6 @@
 ---
 name: skill-audit
-description: Use when the user asks to audit, review, grade, score, lint, or improve an existing skill (a SKILL.md and its folder), or asks whether a skill is well built, portable, or likely to trigger. Not for writing a new skill from scratch and not for running a skill's own task.
+description: Use when the user asks to audit, review, grade, score, or lint an existing skill (a SKILL.md and its folder), or asks whether a skill is well built, portable, or likely to trigger. Not for writing a new skill from scratch, not for running a skill's own task, and not for planning fixes (use skill-improve-plan).
 ---
 
 # Skill audit
@@ -10,7 +10,7 @@ Score one skill against 24 checks in five pillars: Trigger, Content, Reliability
 ## Run
 
 1. Find the skill folder, the directory that holds SKILL.md. Ask for the path only when no folder is in the conversation or the workspace. Done when you can name the folder.
-2. Run `python3 scripts/audit.py <folder> --json`. Done when the output lists all 24 checks.
+2. Run `python3 scripts/audit.py <folder> --json`. Add `--brief` when only the grade and top fixes are needed. Done when the output lists all 24 checks.
 3. Read the audited SKILL.md and every file under its `references/`. Done when you can quote the line behind each finding.
 4. Open `references/rubric.md`. Score the four judge checks (4, 5, 22, 24) with 0, 1, or 2. Check every `heuristic` result against your reading and correct a wrong one. Done when every check has a score or an n/a.
 5. Run the script again with `--override '{"4":2,"5":1,"22":0,"24":0}'`, using your scores. Done when the SCORE line has no PROVISIONAL tag.

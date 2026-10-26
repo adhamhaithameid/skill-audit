@@ -34,9 +34,11 @@ python3 -m unittest discover -s tests
 
 ## Layout
 
-- `skills/skill-audit/`: the skill.
-- `tools/`: repo-level checks.
-- `tests/`: unit tests for the checks.
+- `skills/skill-audit/`: grades a skill against 24 checks.
+- `skills/skill-improve-plan/`: turns an audit into a ranked plan.
+- `skills/skill-report/`: writes a profile of a skill.
+- `tools/`: repo-level checks and sync.
+- `tests/`: unit tests for the checks and the engine.
 - `.github/workflows/`: CI.
 
 ## License

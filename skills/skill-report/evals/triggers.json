@@ -1,0 +1,29 @@
+{
+  "skill_name": "skill-report",
+  "trigger_evals": [
+    {
+      "query": "write a profile of this skill",
+      "should_trigger": true
+    },
+    {
+      "query": "document this skill for my team",
+      "should_trigger": true
+    },
+    {
+      "query": "generate a report about this skill",
+      "should_trigger": true
+    },
+    {
+      "query": "grade this skill",
+      "should_trigger": false
+    },
+    {
+      "query": "write a README",
+      "should_trigger": false
+    },
+    {
+      "query": "use the pdf skill",
+      "should_trigger": false
+    }
+  ]
+}

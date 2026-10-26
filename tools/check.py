@@ -57,6 +57,11 @@ def check_structure(repo, fails):
     for d in skill_dirs(repo):
         if not (d / "SKILL.md").exists():
             fails.append(Failure("structure", d.relative_to(repo), 0, "SKILL.md is missing"))
+    # No nested SKILL.md: a stray one ships as a decoy skill.
+    for f in repo.rglob("SKILL.md"):
+        rel = f.relative_to(repo)
+        if len(rel.parts) != 3 or rel.parts[0] != "skills" or rel.parts[2] != "SKILL.md":
+            fails.append(Failure("structure", rel, 0, "nested SKILL.md would ship as a decoy skill"))
 
 def check_frontmatter(repo, fails):
     for d in skill_dirs(repo):
@@ -118,6 +123,13 @@ def check_readme(repo, fails):
             fails.append(Failure("readme", "README.md", 0, f"skill not listed: {d.name}"))
 
 def check_audit_smoke(repo, fails):
+    canonical = repo / "skills" / "skill-audit" / "scripts" / "audit.py"
+    # synced copies must match the canonical engine
+    for target in ("skill-improve-plan", "skill-report"):
+        copy = repo / "skills" / target / "scripts" / "audit.py"
+        if copy.exists() and canonical.exists() and copy.read_bytes() != canonical.read_bytes():
+            fails.append(Failure("audit-sync", copy.relative_to(repo), 0,
+                                 "differs from canonical audit.py; run tools/sync_audit.py"))
     # run the skill's own audit script as a smoke test
     for d in skill_dirs(repo):
         script = d / "scripts" / "audit.py"

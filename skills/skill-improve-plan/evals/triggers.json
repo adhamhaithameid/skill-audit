@@ -1,0 +1,11 @@
+{
+  "skill_name": "skill-improve-plan",
+  "trigger_evals": [
+    {"query": "how do I improve my skill", "should_trigger": true},
+    {"query": "what should I fix first in this skill", "should_trigger": true},
+    {"query": "give me a plan to improve this skill", "should_trigger": true},
+    {"query": "grade this skill", "should_trigger": false},
+    {"query": "write a README", "should_trigger": false},
+    {"query": "use the pdf skill", "should_trigger": false}
+  ]
+}
