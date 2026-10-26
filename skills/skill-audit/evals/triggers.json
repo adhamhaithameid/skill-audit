@@ -1,0 +1,29 @@
+{
+  "skill_name": "skill-audit",
+  "trigger_evals": [
+    {
+      "query": "can you review my SKILL.md and tell me how to improve it",
+      "should_trigger": true
+    },
+    {
+      "query": "score this skill folder against best practices before I publish it",
+      "should_trigger": true
+    },
+    {
+      "query": "why is my skill not triggering? here is the description",
+      "should_trigger": true
+    },
+    {
+      "query": "create a new skill that formats commit messages",
+      "should_trigger": false
+    },
+    {
+      "query": "use the pdf skill to merge these two files",
+      "should_trigger": false
+    },
+    {
+      "query": "write a README for my repo",
+      "should_trigger": false
+    }
+  ]
+}

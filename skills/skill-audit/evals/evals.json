@@ -1,0 +1,57 @@
+{
+  "skill_name": "skill-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit the skill in evals/fixtures/weak-skill and tell me what to fix first.",
+      "files": [
+        "evals/fixtures/weak-skill/SKILL.md"
+      ],
+      "expected_output": "A graded report that scores the fixture low, flags the invalid name, the narrated description, the harness key, the tool names, the absolute path, the install command, the cross-skill reference, and gives replacement text for the top fixes.",
+      "assertions": [
+        "Runs the audit script and reports its score instead of guessing a number",
+        "Names check 1 as failing because the description narrates steps",
+        "Flags check 2 for the invalid name 'Helper Tool'",
+        "Flags check 16 for the 'model' key and check 17 for harness tool names",
+        "Flags check 18 for the absolute path and the install command, and check 19 for the pdf skill reference",
+        "Gives each top fix as a quoted current line plus a replacement line",
+        "Does not edit the fixture"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Is my skill any good? It is in ./my-skill",
+      "files": [],
+      "expected_output": "The agent looks for ./my-skill. When the folder is missing it asks once for the path and does not invent a score.",
+      "assertions": [
+        "Does not produce a score when no SKILL.md was found",
+        "Asks one question that names what is missing",
+        "Does not claim to have read files it did not read"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I installed write-pr from a .skill file. Grade it, and be honest about the Proof pillar.",
+      "files": [],
+      "expected_output": "A report that grades the skill, states that the installed package has no evals folder by design, and says how to score Proof from the source repository.",
+      "assertions": [
+        "States that a packaged skill drops evals and explains the low Proof score",
+        "Offers to score Proof from the source repository",
+        "Still scores the other four pillars",
+        "Scores judge checks 4, 5, 22 and 24 after reading the skill, not before"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Audit all eight skills in this repo and rank them.",
+      "files": [],
+      "expected_output": "Each skill audited separately, then one summary table ranked by percent, with the shared weakest check named.",
+      "assertions": [
+        "Audits each skill folder with the script",
+        "Ends with one ranked table",
+        "Names the check that fails most often across the set",
+        "Does not average away a failing pillar without showing it"
+      ]
+    }
+  ]
+}

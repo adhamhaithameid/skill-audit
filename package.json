@@ -1,0 +1,12 @@
+{
+  "name": "skill-audit",
+  "version": "0.1.0",
+  "description": "A skill that audits other skills against 24 checks.",
+  "license": "MIT",
+  "author": "adhamhaithameid",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adhamhaithameid/skill-audit.git"
+  },
+  "keywords": ["agent", "skills", "audit"]
+}
