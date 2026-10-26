@@ -16,6 +16,13 @@ The checks live in `references/rubric.md`. Weights and scoring logic live in `sc
 
 Grades: A is 90 and above, B is 80 to 89, C is 65 to 79, D is 50 to 64, F is below 50.
 
+## CLI
+
+```text
+npx skill-audit ./my-skill
+python3 skills/skill-audit/scripts/audit.py ./my-skill --brief
+```
+
 ## Repo checks
 
 Run from the repo root:
