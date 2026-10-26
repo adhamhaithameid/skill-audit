@@ -4,6 +4,15 @@
   "description": "A skill that audits other skills against 24 checks.",
   "license": "MIT",
   "author": "adhamhaithameid",
+  "bin": {
+    "skill-audit": "bin/skill-audit.js"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/adhamhaithameid/skill-audit.git"

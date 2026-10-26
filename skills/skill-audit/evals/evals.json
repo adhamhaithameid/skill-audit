@@ -5,7 +5,7 @@
       "id": 1,
       "prompt": "Audit the skill in evals/fixtures/weak-skill and tell me what to fix first.",
       "files": [
-        "evals/fixtures/weak-skill/SKILL.md"
+        "evals/fixtures/weak-skill/fixture.md"
       ],
       "expected_output": "A graded report that scores the fixture low, flags the invalid name, the narrated description, the harness key, the tool names, the absolute path, the install command, the cross-skill reference, and gives replacement text for the top fixes.",
       "assertions": [

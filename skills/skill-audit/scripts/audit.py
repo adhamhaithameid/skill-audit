@@ -15,6 +15,9 @@ import re
 import sys
 from pathlib import Path
 
+# Python 3.9 compatibility: sys.stdlib_module_names was added in 3.10.
+STDLIB = getattr(sys, "stdlib_module_names", frozenset())
+
 # id: (pillar, name, weight, kind)   kind: auto | heuristic | judge
 CHECKS = {
     1: ("Trigger", "Description states triggers, not steps", 3, "heuristic"),
@@ -149,7 +152,16 @@ def trigger_cases(root):
 
 
 def run(root):
-    text = (root / "SKILL.md").read_text(encoding="utf-8")
+    path = root / "SKILL.md"
+    if not path.exists():
+        raise FileNotFoundError(f"No SKILL.md in {root}")
+    try:
+        raw = path.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError as e:
+        raise ValueError(f"SKILL.md is not valid UTF-8: {e}")
+    if not raw.strip():
+        raise ValueError("SKILL.md is empty")
+    text = raw
     fm, body = parse_frontmatter(text)
     fm = fm or {}
     name, desc = fm.get("name", ""), fm.get("description", "")
@@ -285,7 +297,7 @@ def run(root):
     code = [p for p in scripts if p.suffix in {".py", ".sh", ".js", ".ts", ".mjs"} and p.name != "__init__.py"]
     if code:
         s, notes, unmentioned = 2, [f"{len(code)} script files"], []
-        std = set(sys.stdlib_module_names)
+        std = set(STDLIB)
         for p in code:
             rel = p.relative_to(root)
             anc = [str(a) for a in rel.parents if str(a) != "."]
@@ -482,10 +494,20 @@ def render(d):
     return "\n".join(out)
 
 
+def render_brief(d):
+    t = d["total"]
+    lines = [f"{d['skill']}: {t['percent']}/100 GRADE {t['grade']}"
+             + (f" PROVISIONAL {t['unscored']}" if t["provisional"] else "")]
+    if d["top_fixes"]:
+        lines.append("TOP FIXES: " + "; ".join(f"#{f['id']} {f['name']} ({f['score']}/2)" for f in d["top_fixes"]))
+    return "\n".join(lines)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("path")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--brief", action="store_true")
     ap.add_argument("--override", default="{}")
     a = ap.parse_args()
     p = Path(a.path)
@@ -494,10 +516,24 @@ def main():
         print(f"No SKILL.md in {root}", file=sys.stderr)
         sys.exit(2)
     ov = a.override
-    if ov.startswith("@"):
-        ov = Path(ov[1:]).read_text(encoding="utf-8")
-    d = finish(run(root), json.loads(ov))
-    print(json.dumps(d, indent=2) if a.json else render(d))
+    try:
+        if ov.startswith("@"):
+            ov = Path(ov[1:]).read_text(encoding="utf-8")
+        override = json.loads(ov)
+    except (OSError, json.JSONDecodeError, ValueError) as e:
+        print(f"Bad --override value: {e}", file=sys.stderr)
+        sys.exit(2)
+    try:
+        data = finish(run(root), override)
+    except (FileNotFoundError, ValueError, OSError) as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(2)
+    if a.json:
+        print(json.dumps(data, indent=2))
+    elif a.brief:
+        print(render_brief(data))
+    else:
+        print(render(data))
 
 
 if __name__ == "__main__":
